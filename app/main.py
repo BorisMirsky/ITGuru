@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.orm import sessionmaker
 from fastapi import Depends, FastAPI, Body, Request, Query
 from fastapi.responses import JSONResponse, FileResponse
-#from datetime import datetime
 from pydantic import create_model
 
 
@@ -22,18 +21,6 @@ def get_db():
     finally:
         db.close()
 
-# Преобразование запроса в словарь
-def row2dict(row):
-    d = {}
-    for column in row.__table__.columns:
-        d[column.name] = str(getattr(row, column.name))
-    return d
-
-
-
-@app.get("/")
-def root():
-    return "Корень проекта, но фронтенда тут нет" 
 
 
 @app.get("/orders")
@@ -63,7 +50,9 @@ def edit_order(data = Body(), db: Session = Depends(get_db)):
     
     # ошибка с id товара
     if order == None:
-        return JSONResponse(status_code=404, content={ "message": f"Заказа {order_id} не существует"})
+        return JSONResponse(status_code=404, content={ "message": f"Заказа с id {order_id} не существует"})
+    if product == None:
+        return JSONResponse(status_code=404, content={ "message": f"Товара c id {product_id} не существует"})
     
     # товара нет на складе
     if product.Count == 0:
@@ -71,39 +60,42 @@ def edit_order(data = Body(), db: Session = Depends(get_db)):
     
     # требуется больше товара, чем есть на складе
     if product.Count < required_product_count:
+        required_product_count = product.Count
         return JSONResponse(status_code=404, content={ "message": f"В заказ добавлено {product.Count} штук из требуемых {required_product_count}. Товар закончился."})
-      
+
+
     for row in db.query(OrderProducts).filter(OrderProducts.Order_id == order_id):
-        # товар есть в заказе и его количество обновляется 
+        # товар есть в заказе => его количество обновляется 
         if row.Product_id == product_id:
-            print('___666___', row.Product_id, product_id, sep=', ')
-        # товара нет в заказе и сооздаётся новая строка  
+            orderProducts.Product_count += required_product_count
+            order.Order_sum += product.Price * required_product_count
+            product.Count = (product.Count - required_product_count)
+            print(11111)
+            break
+        # товара нет в заказе => создаётся новая строка  
         else:
-            print('___444___', row.Product_id, product_id, sep=', ')
-        
-
-    # товара нет в заказе, т.е. создаётся новая позиция
-
-
-    
+            del orderProducts
+            orderProducts = OrderProducts()
+            orderProducts.Order_id = order_id
+            orderProducts.Product_id = product_id
+            orderProducts.Product_count = required_product_count
+            order.Order_sum += product.Price * required_product_count
+            product.Count = (product.Count - required_product_count)
+            print(222222)
+            break
+        #order.Order_sum += product.Price * required_product_count
+        #product.Count = (product.Count - required_product_count)
+           
     # внесение изменений в бд
-    #db.add(transaction)
+    #db.add(order)
+    #db.add(product)
+    #db.add(orderProducts)
     #db.commit()
-    #db.refresh(transaction)
-    #db.refresh(client)
-    #content = "Клиент: {0}, Баланс в рублях: {1}, Комментарий: {2}".format(client_parsed['name'],
-    #                                                                       client.balance, comments_)
+    #db.refresh(order)
+    #db.refresh(product)
+    #db.refresh(orderProducts)
     result = {"status":"OK", "code":200, "content": orderProducts}
-    #print('type(orderProducts) ', type(orderProducts))
-    return product #orderProducts.Product_count
-
-
-
-
-
-
-
-
+    return result 
 
 
 

@@ -7,8 +7,9 @@ from sqlalchemy.orm import DeclarativeBase
 from fastapi import FastAPI
 
 
-#"sqlite:///./sql_app.db"
+
 SQLALCHEMY_DATABASE_URL = "sqlite:///../database/itguru_db.db"
+
 engine = create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
