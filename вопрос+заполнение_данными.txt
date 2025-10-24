@@ -124,7 +124,8 @@ INSERT INTO OrderProducts(Order_id, Product_id, Product_count) VALUES
 (20, 1, 1),
 (20, 2, 1),
 (20, 3, 3),
-(20, 4, 3)
+(20, 4, 3),
+(21, 5, 2)
 
 
 INSERT INTO Orders(Id, Client_id, Datetime, Sum) VALUES 
