@@ -85,7 +85,7 @@ select id, name from r where id <> 12;
      Сделать получение категории                 !ДЕЛАТЬ
      объединить с запросом
 
-     CREATE VIEW IF NOT EXISTS top_5_products_last_month_23_10_2025 AS
+     CREATE VIEW IF NOT EXISTS top_5_products_last_month_25_10_2025 AS
      SELECT Name, Count(*) * Product_count AS Result_count
      FROM Orders
      JOIN OrderProducts ON Orders.Id = OrderProducts.Order_id
@@ -110,10 +110,7 @@ select id, name from r where id <> 12;
 
                   - Fast API (метод написать)
                 
-                Осталось:
 
-                1) async
-                2) есть ли товар в заказе
                 
 
 curl -X PUT -H "Content-Type: application/json" http://127.0.0.1:8000/add_product_to_order -d "{\"order_id\": 1, \"product_id\": 2, \"product_count\": 3}"
