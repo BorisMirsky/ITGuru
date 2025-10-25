@@ -6,11 +6,12 @@ def func(x):
     flag=0
     for i in mylist:
         if x == i:
-            print(1)
+            flag=1
+            print(11)
             break
         else:
-            print(2)
-            #break
+            print(22)
+    print(flag)
 
 
-func('5')
+func('54')
