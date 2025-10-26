@@ -14,10 +14,10 @@
    id, parent_id, name
 
 3. Clients
-   id, name, adress 
+   id, name, address 
 
 4. Orders    
-   id, client_id, datetime, sum
+   id, client_id, datetime, order_sum
 
 5. OrderProducts
    order_id, product_id, product_count    
