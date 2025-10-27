@@ -67,7 +67,7 @@ WITH RECURSIVE
 SELECT p.name, tf.total_orders, c.name as top_level_category
 FROM top_five tf
 JOIN products p ON p.id = tf.product_id
-JOIN owners o ON o.id = p.id
+JOIN owners o ON o.id = p.category_id
 JOIN categories c ON c.id = o.top_level_id
 ORDER BY tf.total_orders DESC;
 ```
