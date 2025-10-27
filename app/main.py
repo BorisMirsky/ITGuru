@@ -29,8 +29,6 @@ def get_db():
 
 
 
-
-
 @app.put("/add_product_to_order")
 async def edit_order(data = Body(), db: Session = Depends(get_db)):
     order_id = data["order_id"]

@@ -1,0 +1,86 @@
+
+1. Получение информации о сумме товаров заказанных под каждого клиента (Наименование клиента, сумма)
+
+В SQLite нет возможности явно задать переменную (DECLARE), поэтому id клиента добавляем вручную в последней строке.
+Всего в тестовой БД 3 клиента.
+
+```
+SELECT Clients.Name as Client_name, SUM(Orders.Order_sum) as Client_sum
+FROM Orders 
+LEFT JOIN Clients
+ON Orders.Client_id = Clients.Id
+WHERE Clients.Id = 3
+```
+
+
+2. Найти количество дочерних элементов первого уровня вложенности для категорий номенклатуры.
+
+Переменных в SQLite нет (DECLARE), поэтому категорию ставим вручную в двух местах.
+Во вложенной тестовой БД 2 категории первого уровня вложенности - №№1 и 12
+
+```
+WITH RECURSIVE R AS (
+    SELECT
+      id, parent_id, name
+    FROM Categories
+    WHERE id = 1
+  UNION
+    SELECT
+      cc.id, cc.parent_id, cc.name
+    FROM Categories as cc
+    JOIN r
+      ON cc.parent_id = r.id
+)
+SELECT COUNT(*) FROM r WHERE id <> 1;
+```
+
+
+3.   Написать текст запроса для отчета (view) «Топ-5 самых покупаемых товаров за
+последний месяц» (по количеству штук в заказах). В отчете должны быть:
+Наименование товара, Категория 1-го уровня, Общее количество проданных штук.
+
+```
+CREATE VIEW IF NOT EXISTS top_5_products_last_month AS
+WITH RECURSIVE 
+  owners (id, top_level_id) AS
+  (
+    SELECT id, id
+    FROM categories 
+    WHERE parent_id IS NULL
+
+    UNION ALL 
+
+    SELECT c.id, o.top_level_id
+    FROM owners o 
+    JOIN categories c ON o.id = c.parent_id
+  ),
+  top_five AS
+  (
+    SELECT op.product_id, SUM(op.product_count) AS total_orders
+    FROM orders o
+    JOIN orderproducts op ON op.order_id = o.id
+    WHERE o.created_at > DATETIME('now', '-30 day')
+    GROUP BY op.product_id
+    ORDER BY total_orders DESC 
+    LIMIT 5
+  )
+SELECT p.name, tf.total_orders, c.name as top_level_category
+FROM top_five tf
+JOIN products p ON p.id = tf.product_id
+JOIN owners o ON o.id = p.id
+JOIN categories c ON c.id = o.top_level_id
+ORDER BY tf.total_orders DESC;
+```
+
+
+
+2.3.2. Проанализировать написанный выше запрос и структуру БД. Предложить
+варианты оптимизации этого запроса и общей схемы данных для повышения
+производительности системы в условиях роста данных (тысячи заказов в день).
+
+- Использовать запрос как хранимую процедуру (после первого использования сервер создаст кэш).
+- Обновлять такой запрос каждый день, что ускорит использование where и order by.
+- Использовать кластеризованные фильтрующие индексы - т.е. сохранение нескольких колонок таблиц в отсортированном виде.
+
+
+
